@@ -5,6 +5,7 @@ type Query {
 }
 
 type Mutation {
+  login(email: String!, password: String!): String,
   createJob(input: CreateJobInput!): Job,
   deleteJob(id: ID!): Job,
   updateJob(input: UpdateJobInput!): Job
