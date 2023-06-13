@@ -1,4 +1,4 @@
-import { ApolloClient, ApolloLink, concat, createHttpLink, gql, InMemoryCache } from '@apollo/client'
+import { ApolloClient, ApolloLink, concat, createHttpLink, gql, InMemoryCache } from '@apollo/client';
 import { getAccessToken } from '../auth';
 
 
@@ -19,20 +19,47 @@ const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+const jobByIdQuery = gql`
+  query JobById($id: ID!) {
+    job(id: $id) {
+      id
+      date
+      title
+      company {
+        id
+        name
+      }
+      description
+    }
+  }
+`;
+
 export async function createJob({ title, description }) {
   const mutation = gql`
     mutation CreateJob($input: CreateJobInput!) {
       job: createJob(input: $input) {
         id
+        date
+        title
+        company {
+          id
+          name
+        }
+        description
       }
     }
   `;
-
   const { data } = await apolloClient.mutate({
     mutation,
-    variables: { input: { title, description }},
-  })
-
+    variables: { input: { title, description } },
+    update: (cache, { data }) => {
+      cache.writeQuery({
+        query: jobByIdQuery,
+        variables: { id: data.job.id },
+        data,
+      });
+    },
+  });
   return data.job;
 }
 
@@ -59,22 +86,8 @@ export async function getCompany(id) {
 }
 
 export async function getJob(id) {
-  const query = gql`
-    query JobById($id: ID!) {
-      job(id: $id) {
-        id
-        date
-        title
-        company {
-          id
-          name
-        }
-        description
-      }
-    }
-  `;
   const { data } = await apolloClient.query({
-    query,
+    query: jobByIdQuery,
     variables: { id },
   });
   return data.job;
@@ -84,16 +97,19 @@ export async function getJobs() {
   const query = gql`
     query Jobs {
       jobs {
-        id,
-        date,
-        title,
+        id
+        date
+        title
         company {
-          id,
-          name,
+          id
+          name
         }
       }
     }
   `;
-  const { data } = await apolloClient.query({ query });
+  const { data } = await apolloClient.query({
+    query,
+    fetchPolicy: 'network-only',
+  });
   return data.jobs;
-};
+}
