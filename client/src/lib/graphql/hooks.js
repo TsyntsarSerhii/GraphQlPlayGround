@@ -3,7 +3,8 @@ import { companyByIdQuery, jobByIdQuery, jobsQuery } from "./queries";
 
 export function useCompany(id) {
   const { data, loading, error} = useQuery(companyByIdQuery, {
-    variables: { id }
+    variables: { id },
+    fetchPolicy: 'network-only',
   });
   return { company: data?.company, loading, error: Boolean(error) }
 }
