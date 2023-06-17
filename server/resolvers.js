@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { companyLoader, getCompany } from "./db/companies.js";
+import { getCompany } from "./db/companies.js";
 import { createJob, deleteJob, getJob, getJobs, getJobsByCompanyId, updateJob } from "./db/jobs.js";
 
 export const resolvers = {
@@ -30,7 +30,9 @@ export const resolvers = {
 
   Job: {
     date: (job) => toISOString(job.createdAt),
-    company: (job) => companyLoader.load(job.companyId)
+    company: (job, _args, { companyLoader }) => {
+      return companyLoader.load(job.companyId);
+    },
   },
 
   Mutation: {
