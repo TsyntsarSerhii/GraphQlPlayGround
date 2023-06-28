@@ -4,10 +4,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "nodemon server.js"
+    "build": "tsc",
+    "start": "nodemon src/server.ts"
   },
   "dependencies": {
-    "@apollo/server": "^4.7.2",
+    "@apollo/server": "^4.6.0",
     "better-sqlite3": "^8.3.0",
     "cors": "^2.8.5",
     "dataloader": "^2.2.2",
@@ -19,9 +20,13 @@
     "nanoid": "^4.0.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "@tsconfig/node18": "^2.0.0",
+    "@types/cors": "^2.8.13",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
   },
   "nodemonConfig": {
-    "ext": "graphql,js"
+    "ext": "graphql,ts"
   }
 }

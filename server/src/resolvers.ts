@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql';
 import { getCompany } from "./db/companies.js";
-import { countJobs, createJob, deleteJob, getJob, getJobs, getJobsByCompanyId, updateJob } from "./db/jobs.js";
+import { countJobs, createJob, deleteJob, getJob, getJobs, getJobsByCompanyId, updateJob } from './db/jobs.js';
 
 export const resolvers = {
   Query: {
@@ -71,18 +71,18 @@ export const resolvers = {
   }
 };
 
-function notFoundError(message) {
+function notFoundError(message: string) {
   return new GraphQLError(message, {
     extensions: { code: 'NOT_FOUND'},
   })
 }
 
-function unauthorizedError(message) {
+function unauthorizedError(message: string) {
   return new GraphQLError(message, {
     extensions: { code: 'UNAUTHORIZED' },
   });
 }
 
-function toISOString(value) {
+function toISOString(value: string) {
   return value.slice(0, 'yyyy-mm-dd'.length);
 };
