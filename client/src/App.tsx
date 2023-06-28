@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Route, Routes } from 'react-router-dom';
-import { getUser } from './lib/auth';
+import { User, getUser } from './lib/auth';
 import NavBar from './components/NavBar';
 import CompanyPage from './pages/CompanyPage';
 import CreateJobPage from './pages/CreateJobPage';
@@ -15,7 +15,7 @@ function App() {
   const navigate = useNavigate();
   const [user, setUser] = useState(getUser);
 
-  const handleLogin = (user) => {
+  const handleLogin = (user: User) => {
     setUser(user);
     navigate('/');
   };

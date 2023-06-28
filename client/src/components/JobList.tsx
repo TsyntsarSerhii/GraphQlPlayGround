@@ -1,7 +1,24 @@
 import { Link } from 'react-router-dom';
 import { formatDate } from '../lib/formatters';
 
-function JobList({ jobs }) {
+interface Job {
+  id: string;
+  date: string;
+  title: string;
+  company?: {
+    name: string;
+  };
+}
+
+interface JobListProps {
+  jobs: Job[];
+}
+
+interface JobItemProps {
+  job: Job;
+}
+
+function JobList({ jobs }: JobListProps) {
   return (
     <ul className="box">
       {jobs.map((job) => (
@@ -11,7 +28,7 @@ function JobList({ jobs }) {
   );
 }
 
-function JobItem({ job }) {
+function JobItem({ job }: JobItemProps) {
   const title = job.company
     ? `${job.title} at ${job.company.name}`
     : job.title;
