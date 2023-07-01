@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import { readFile } from 'node:fs/promises';
 import { authMiddleware, handleLogin } from './auth.js';
-import { resolvers } from './resolvers.js';
+import { ResolverContext, resolvers } from './resolvers.js';
 import { createCompanyLoader } from './db/companies.js';
 import { getUser } from './db/users.js';
 
@@ -19,7 +19,7 @@ const typeDefs = await readFile('./schema.graphql', 'utf8')
 
 async function getContext({ req }) {
   const companyLoader = createCompanyLoader();
-  const context: any = { companyLoader };
+  const context: ResolverContext = { companyLoader };
 
   if (req.auth) {
     context.user = await getUser(req.auth.sub)

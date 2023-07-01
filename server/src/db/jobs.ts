@@ -20,7 +20,7 @@ export async function getJobs(limit: number, offset: number) {
   return await query;
 }
 
-export async function getJobsByCompanyId(companyId: string) {
+export async function getJobsByCompany(companyId: string) {
   return await getJobTable().select().where({ companyId });
 }
 

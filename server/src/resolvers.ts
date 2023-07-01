@@ -1,9 +1,24 @@
+import DataLoader from 'dataloader';
 import { GraphQLError } from 'graphql';
-import { getCompany } from "./db/companies.js";
-import { countJobs, createJob, deleteJob, getJob, getJobs, getJobsByCompanyId, updateJob } from './db/jobs.js';
+import { getCompany } from './db/companies.js';
+import { countJobs, createJob, deleteJob, getJob, getJobs, getJobsByCompany, updateJob } from './db/jobs.js';
+import { CompanyEntity, UserEntity } from './db/types.js';
+import { Resolvers } from './generated/schema.js';
 
-export const resolvers = {
+export interface ResolverContext {
+  companyLoader: DataLoader<string, CompanyEntity, string>;
+  user?: UserEntity;
+}
+
+export const resolvers: Resolvers = {
   Query: {
+    company: async (_root, { id }) => {
+      const company = await getCompany(id);
+      if (!company) {
+        throw notFoundError('No Company found with id ' + id);
+      }
+      return company;
+    },
     job: async (_root, { id }) => {
       const job = await getJob(id);
       if (!job) {
@@ -11,70 +26,60 @@ export const resolvers = {
       }
       return job;
     },
-
     jobs: async (_root, { limit, offset }) => {
       const items = await getJobs(limit, offset);
       const totalCount = await countJobs();
       return { items, totalCount };
     },
-
-    company: async (_root, { id }) => {
-      const company = await getCompany(id);
-      if(!company) {
-        throw notFoundError('No Company found with id ' + id)
-      }
-
-      return company;
-    } 
-  },
-
-  Company: {
-    jobs: (company) => getJobsByCompanyId(company.id),
-  },
-
-  Job: {
-    date: (job) => toISOString(job.createdAt),
-    company: (job, _args, { companyLoader }) => {
-      return companyLoader.load(job.companyId);
-    },
   },
 
   Mutation: {
     createJob: (_root, { input: { title, description } }, { user }) => {
-      if(!user) {
-        return unauthorizedError('Missing authentication')
-      }
-      return createJob({ companyId: user.companyId, title, description })
-    },
-    
-    deleteJob: (_root, { id }, { user }) => {
       if (!user) {
-        throw unauthorizedError('Missing authentication')
+        throw unauthorizedError('Missing authentication');
       }
-      const job = deleteJob(id, user.companyId);
+      return createJob({ companyId: user.companyId, title, description });
+    },
+
+    deleteJob: async (_root, { id }, { user }) => {
+      if (!user) {
+        throw unauthorizedError('Missing authentication');
+      }
+      const job = await deleteJob(id, user.companyId);
       if (!job) {
-        throw notFoundError(`No Job found with id: ${id}`)
+        throw notFoundError('No Job found with id ' + id);
       }
       return job;
     },
 
-    updateJob: (_root, { input: {id, title, description }}, { user }) => {
+    updateJob: async (_root, { input: { id, title, description } }, { user }) => {
       if (!user) {
-        throw unauthorizedError(`Job not found: ${id}`)
+        throw unauthorizedError('Missing authentication');
       }
-      const job = updateJob({ id, companyId: user.companyId, title, description });
+      const job = await updateJob({ id, companyId: user.companyId, title, description });
       if (!job) {
-        throw notFoundError(`No Job found with id: ${id}`)
+        throw notFoundError('No Job found with id ' + id);
       }
       return job;
-    }
-  }
+    },
+  },
+
+  Company: {
+    jobs: (company) => getJobsByCompany(company.id),
+  },
+
+  Job: {
+    company: (job, _args, { companyLoader }) => {
+      return companyLoader.load(job.companyId);
+    },
+    date: (job) => toIsoDate(job.createdAt),
+  },
 };
 
 function notFoundError(message: string) {
   return new GraphQLError(message, {
-    extensions: { code: 'NOT_FOUND'},
-  })
+    extensions: { code: 'NOT_FOUND' },
+  });
 }
 
 function unauthorizedError(message: string) {
@@ -83,6 +88,6 @@ function unauthorizedError(message: string) {
   });
 }
 
-function toISOString(value: string) {
+function toIsoDate(value: string) {
   return value.slice(0, 'yyyy-mm-dd'.length);
-};
+}
